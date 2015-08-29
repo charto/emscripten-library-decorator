@@ -1,4 +1,4 @@
-// @dep decorator
+// @dep decorator.
 function dep(...depList: Function[]) {
 	return(function(target: Object, functionName: string) {
 		// Export names of other functions required by <functionName>
@@ -16,9 +16,12 @@ function dep(...depList: Function[]) {
 	});
 }
 
+// @exportLibrary decorator.
 function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
+
+// Declarations of some globals provided by Emscripten to its libraries.
 
 interface _Library {}
 
@@ -29,6 +32,8 @@ interface _LibraryManager {
 declare var LibraryManager: _LibraryManager;
 
 declare function mergeInto(lib: _Library, proto: any): void;
+
+// The HEAP* arrays are the main way to access the C++ heap.
 
 declare var HEAP8: Int8Array;
 declare var HEAP16: Int16Array;
