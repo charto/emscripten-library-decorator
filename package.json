@@ -1,0 +1,8 @@
+{
+  "name": "emscripten-library-decorator",
+  "version": "0.0.1",
+  "description": "Decorators for writing Emscripten libraries",
+  "author": "Juha Järvi",
+  "license": "MIT",
+  "main": "index.ts"
+}
