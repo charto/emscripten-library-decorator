@@ -4,7 +4,7 @@ function dep(...depList: any[]) {
 		// Export names of other functions required by <functionName>
 		// as an array named <functionName>__deps.
 		var key = functionName + '__deps';
-		var lib = (<any>target);
+		var lib = (<{ [key: string]: any }>target);
 
 		lib[key] = (lib[key] || []).concat(depList.map((dep: any) => {
 			var name: string;
@@ -34,15 +34,6 @@ function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
-// @exportClass decorator.
-function exportClass(target: any) {
-	var name = target.name;
-
-	var body = '(' + __decorate.caller.toString().replace(new RegExp(name + ' *= *__decorate *\\( *\\[[^\\]]*\\][^)]*\\) *;'), '') + ')';
-
-	return(eval(body));
-}
-
 var namespaceList: string[] = [];
 
 function _initNamespaces() {
@@ -50,26 +41,35 @@ function _initNamespaces() {
 
 	for(var i = 0; i < namespaceList.length; ++i) {
 		var space = namespaceList[i];
-
-		for(var name in space) {
-			if(space.hasOwnProperty(name)) space[name] = space[name]();
-		}
+		if(space) space.init(space);
 	}
 }
 
 // @exportNamespace decorator.
-function exportNamespace(target: any) {
-	namespaceList.push(target.name);
+function exportNamespace(name: string) {
+	return((target: any) => {
+		var body = '(' + __decorate.caller.caller.toString().replace(/var +_ *= *[^]*/, '}') + ')';
 
-	mergeInto(LibraryManager.library, {
-		initNamespaces: eval('(' + _initNamespaces.toString().replace('$NAMESPACELIST', '[' + namespaceList.join(',') + ']') + ')')
+		eval(name + ' = { init: ' + body + ' };');
+
+		namespaceList.push(name);
+
+		var safeList = namespaceList.map((name: string) => ("typeof(" + name + ")=='object'&&" + name));
+
+		mergeInto(LibraryManager.library, {
+			initNamespaces: eval('(' + _initNamespaces.toString().replace('$NAMESPACELIST', '[' + safeList.join(',') + ']') + ')')
+		});
 	});
 }
 
-// @extend decorator.
-function extend(parent: any) {
-	return((target: any) => {
-		return(<any>(eval('(' + target.toString().replace('_super', parent.name) + ')')));
+function _defineHidden(value: any) {
+	return((target: any, key: string) => {
+		Object.defineProperty(target, key, {
+			configurable: false,
+			enumerable: false,
+			writable: false,
+			value: value
+		});
 	});
 }
 
@@ -77,9 +77,10 @@ function extend(parent: any) {
 
 declare var $NAMESPACELIST: any[];
 
-// Typescript internal shim function.
+// Typescript internal shim functions.
 
 declare var __decorate: any;
+declare var __extends: any;
 
 // Declarations of some globals provided by Emscripten to its libraries.
 
