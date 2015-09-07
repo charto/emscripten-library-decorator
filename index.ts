@@ -1,18 +1,31 @@
 // @dep decorator.
-function dep(...depList: Function[]) {
-	return(function(target: Object, functionName: string) {
+function dep(...depList: any[]) {
+	return((target: Object, functionName: string) => {
 		// Export names of other functions required by <functionName>
 		// as an array named <functionName>__deps.
-		(<any>target)[functionName + '__deps'] = depList.map((func: any) => {
-			// Get name of required function and remove underscore prefix.
-			var name = func.name.substr(1);
+		var key = functionName + '__deps';
+		var lib = (<any>target);
 
-			// Export required function with prefix removed from its name.
-			(<any>target)[name] = func;
+		lib[key] = (lib[key] || []).concat(depList.map((dep: any) => {
+			var name: string;
+
+			if(typeof(dep) == 'function') {
+				// Get name of required function and remove underscore prefix.
+				name = dep.name.substr(1);
+
+				// Export required function with prefix removed from its name.
+				lib[name] = dep;
+			} else {
+				name = dep.substr(1);
+
+				// Export any required global variable,
+				// looking it up by name in current scope.
+				if(name != 'initNamespaces') lib[name] = eval('(' + dep + ')');
+			}
 
 			// Send name without prefix to __deps list.
 			return(name);
-		});
+		}));
 	});
 }
 
