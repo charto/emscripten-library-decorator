@@ -34,6 +34,53 @@ function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
+// @exportClass decorator.
+function exportClass(target: any) {
+	var name = target.name;
+
+	var body = '(' + __decorate.caller.toString().replace(new RegExp(name + ' *= *__decorate *\\( *\\[[^\\]]*\\][^)]*\\) *;'), '') + ')';
+
+	return(eval(body));
+}
+
+var namespaceList: string[] = [];
+
+function _initNamespaces() {
+	var namespaceList = $NAMESPACELIST;
+
+	for(var i = 0; i < namespaceList.length; ++i) {
+		var space = namespaceList[i];
+
+		for(var name in space) {
+			if(space.hasOwnProperty(name)) space[name] = space[name]();
+		}
+	}
+}
+
+// @exportNamespace decorator.
+function exportNamespace(target: any) {
+	namespaceList.push(target.name);
+
+	mergeInto(LibraryManager.library, {
+		initNamespaces: eval('(' + _initNamespaces.toString().replace('$NAMESPACELIST', '[' + namespaceList.join(',') + ']') + ')')
+	});
+}
+
+// @extend decorator.
+function extend(parent: any) {
+	return((target: any) => {
+		return(<any>(eval('(' + target.toString().replace('_super', parent.name) + ')')));
+	});
+}
+
+// Placeholder variable replaced in code with array contents.
+
+declare var $NAMESPACELIST: any[];
+
+// Typescript internal shim function.
+
+declare var __decorate: any;
+
 // Declarations of some globals provided by Emscripten to its libraries.
 
 interface _Library {}
@@ -43,6 +90,8 @@ interface _LibraryManager {
 }
 
 declare var LibraryManager: _LibraryManager;
+
+declare var Module: any;
 
 declare function mergeInto(lib: _Library, proto: any): void;
 
