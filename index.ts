@@ -1,4 +1,7 @@
 // @dep decorator.
+// Apply to a function, to export other variables whenever it's used.
+// Arguments can be functions to export or names of global variables.
+
 function dep(...depList: any[]) {
 	return((target: Object, functionName: string) => {
 		// Export names of other functions required by <functionName>
@@ -30,37 +33,39 @@ function dep(...depList: any[]) {
 }
 
 // @exportLibrary decorator.
+// Apply to a class with static methods, to export them as functions.
+
 function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
-var namespaceList: string[] = [];
-
-function _initNamespaces() {
-	var namespaceList = $NAMESPACELIST;
-
-	for(var i = 0; i < namespaceList.length; ++i) {
-		var space = namespaceList[i];
-		if(space) space.init(space);
-	}
-}
-
 // @exportNamespace decorator.
+// Apply to a class named "_" and defined at the end of the namespace,
+// to export the entire namespace.
+
 function exportNamespace(name: string) {
 	return((target: any) => {
+		var exportName = name.substr(1);
+
 		var body = '(' + __decorate.caller.caller.toString().replace(/var +_ *= *[^]*/, '}') + ')';
 
-		eval(name + ' = { init: ' + body + ' };');
+		eval(name + '={};');
 
-		namespaceList.push(name);
+		var lib: _Library = {
+			_extends: __extends,
+			_decorate: __decorate,
+			defineHidden: _defineHidden
+		};
 
-		var safeList = namespaceList.map((name: string) => ("typeof(" + name + ")=='object'&&" + name));
+		lib[exportName + '__deps'] = Object.keys(lib);
+		lib[exportName + '__postset'] = body + '(' + name + ')';
 
-		mergeInto(LibraryManager.library, {
-			initNamespaces: eval('(' + _initNamespaces.toString().replace('$NAMESPACELIST', '[' + safeList.join(',') + ']') + ')')
-		});
+		mergeInto(LibraryManager.library, lib);
 	});
 }
+
+// @_defineHidden decorator.
+// Apply to a property to protect it from modifications and hide it.
 
 function _defineHidden(value: any) {
 	return((target: any, key: string) => {
@@ -73,10 +78,6 @@ function _defineHidden(value: any) {
 	});
 }
 
-// Placeholder variable replaced in code with array contents.
-
-declare var $NAMESPACELIST: any[];
-
 // Typescript internal shim functions.
 
 declare var __decorate: any;
@@ -84,7 +85,7 @@ declare var __extends: any;
 
 // Declarations of some globals provided by Emscripten to its libraries.
 
-interface _Library {}
+interface _Library { [name: string]: any }
 
 interface _LibraryManager {
 	library: _Library;
@@ -94,7 +95,7 @@ declare var LibraryManager: _LibraryManager;
 
 declare var Module: any;
 
-declare function mergeInto(lib: _Library, proto: any): void;
+declare function mergeInto(target: _Library, extension: _Library): void;
 
 // The HEAP* arrays are the main way to access the C++ heap.
 
