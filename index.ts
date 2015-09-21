@@ -87,23 +87,8 @@ declare var __extends: any;
 
 interface _Library { [name: string]: any }
 
-interface _LibraryManager {
+declare var LibraryManager: {
 	library: _Library;
-}
-
-declare var LibraryManager: _LibraryManager;
-
-declare var Module: any;
+};
 
 declare function mergeInto(target: _Library, extension: _Library): void;
-
-// The HEAP* arrays are the main way to access the C++ heap.
-
-declare var HEAP8: Int8Array;
-declare var HEAP16: Int16Array;
-declare var HEAP32: Int32Array;
-declare var HEAPU8: Uint8Array;
-declare var HEAPU16: Uint16Array;
-declare var HEAPU32: Uint32Array;
-declare var HEAPF32: Float32Array;
-declare var HEAPF64: Float64Array;
