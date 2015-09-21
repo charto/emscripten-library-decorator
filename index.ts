@@ -67,12 +67,12 @@ function exportNamespace(name: string) {
 // @_defineHidden decorator.
 // Apply to a property to protect it from modifications and hide it.
 
-function _defineHidden(value: any) {
+function _defineHidden(value?: any) {
 	return((target: any, key: string) => {
 		Object.defineProperty(target, key, {
 			configurable: false,
 			enumerable: false,
-			writable: false,
+			writable: true,
 			value: value
 		});
 	});
