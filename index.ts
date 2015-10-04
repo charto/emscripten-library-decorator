@@ -39,15 +39,26 @@ function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
+var namespaceBodyTbl: { [name: string]: string } = {};
+
 // @exportNamespace decorator.
-// Apply to a class named "_" and defined at the end of the namespace,
+// Apply to an empty, named dummy class defined at the end of the namespace,
 // to export the entire namespace.
 
 function exportNamespace(name: string) {
 	return((target: any) => {
 		var exportName = name.substr(1);
 
-		var body = '(' + __decorate.caller.caller.toString().replace(/var +_ *= *[^]*/, '}') + ')';
+		var body = __decorate.caller.caller.toString();
+
+		var prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
+		var suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
+
+		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
+
+		namespaceBodyTbl[name] = body;
+
+		var bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
 
 		eval(name + '={};');
 
@@ -58,7 +69,7 @@ function exportNamespace(name: string) {
 		};
 
 		lib[exportName + '__deps'] = Object.keys(lib);
-		lib[exportName + '__postset'] = body + '(' + name + ')';
+		lib[exportName + '__postset'] = bodyWrapped;
 
 		mergeInto(LibraryManager.library, lib);
 	});
