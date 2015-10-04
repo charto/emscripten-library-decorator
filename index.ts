@@ -39,29 +39,44 @@ function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
+var namespaceBodyTbl: { [name: string]: string } = {};
+
 // @exportNamespace decorator.
-// Apply to a class named "_" and defined at the end of the namespace,
-// to export the entire namespace.
+// Apply to an empty, named dummy class defined at the end of the namespace,
+// to prepare the entire namespace for exporting and merge its content
+// defined in several source files into a single object.
+
+function prepareNamespace(name: string) {
+	return((target: any) => {
+		var body = __decorate.caller.caller.toString();
+
+		var prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
+		var suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
+
+		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
+
+		namespaceBodyTbl[name] = body;
+	});
+}
 
 function exportNamespace(name: string) {
-	return((target: any) => {
-		var exportName = name.substr(1);
+	var exportName = name.substr(1);
 
-		var body = '(' + __decorate.caller.caller.toString().replace(/var +_ *= *[^]*/, '}') + ')';
+	var body = namespaceBodyTbl[name];
+	var bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
 
-		eval(name + '={};');
+	eval(name + '={};');
 
-		var lib: _Library = {
-			_extends: __extends,
-			_decorate: __decorate,
-			defineHidden: _defineHidden
-		};
+	var lib: _Library = {
+		_extends: __extends,
+		_decorate: __decorate,
+		defineHidden: _defineHidden
+	};
 
-		lib[exportName + '__deps'] = Object.keys(lib);
-		lib[exportName + '__postset'] = body + '(' + name + ')';
+	lib[exportName + '__deps'] = Object.keys(lib);
+	lib[exportName + '__postset'] = bodyWrapped;
 
-		mergeInto(LibraryManager.library, lib);
-	});
+	mergeInto(LibraryManager.library, lib);
 }
 
 // @_defineHidden decorator.
