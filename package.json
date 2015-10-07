@@ -1,6 +1,6 @@
 {
   "name": "emscripten-library-decorator",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Decorators for writing Emscripten libraries",
   "homepage": "https://github.com/charto/emscripten-library-decorator",
   "bugs": {
