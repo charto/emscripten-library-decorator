@@ -46,19 +46,6 @@ var namespaceBodyTbl: { [name: string]: string } = {};
 // to prepare the entire namespace for exporting and merge its content
 // defined in several source files into a single object.
 
-function prepareNamespace(name: string) {
-	return((target: any) => {
-		var body = __decorate.caller.caller.toString();
-
-		var prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
-		var suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
-
-		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
-
-		namespaceBodyTbl[name] = body;
-	});
-}
-
 function exportNamespace(name: string) {
 	var exportName = name.substr(1);
 
@@ -77,13 +64,15 @@ function exportNamespace(name: string) {
 	lib[exportName + '__postset'] = bodyWrapped;
 
 	mergeInto(LibraryManager.library, lib);
+
+	return((target: any) => {});
 }
 
 // @_defineHidden decorator.
 // Apply to a property to protect it from modifications and hide it.
 
 function _defineHidden(value?: any) {
-	return((target: any, key: string) => {
+	return((target: Object, key: string) => {
 		Object.defineProperty(target, key, {
 			configurable: false,
 			enumerable: false,
