@@ -1,16 +1,27 @@
 {
   "name": "emscripten-library-decorator",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Decorators for writing Emscripten libraries",
-  "homepage": "https://github.com/charto/emscripten-library-decorator",
-  "bugs": {
-    "url": "https://github.com/charto/emscripten-library-decorator/issues"
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "tsc": "tsc",
+    "docts": "docts",
+    "prepublish": "tsc",
+    "test": "node index.js"
   },
   "author": "Juha Järvi",
   "license": "MIT",
-  "main": "index.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/charto/emscripten-library-decorator.git"
+    "url": "git+https://github.com/charto/emscripten-library-decorator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/charto/emscripten-library-decorator/issues"
+  },
+  "homepage": "https://github.com/charto/emscripten-library-decorator",
+  "devDependencies": {
+    "docts": "~0.0.4",
+    "typescript": "^1.8.10"
   }
 }

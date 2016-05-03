@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noImplicitAny": true,
+		"noImplicitUseStrict": true,
+		"removeComments": false,
+		"target": "es5"
+	},
+	"files": [
+		"emscripten.d.ts",
+		"index.ts"
+	]
+}

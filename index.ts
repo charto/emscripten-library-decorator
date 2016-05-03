@@ -1,8 +1,23 @@
-// @dep decorator.
-// Apply to a function, to export other variables whenever it's used.
-// Arguments can be functions to export or names of global variables.
+// This file is part of emscripten-library-decorator,
+// copyright (c) 2015-2016 BusFaster Ltd.
+// Released under the MIT license, see LICENSE.
 
-function dep(...depList: any[]) {
+var evil: (code: string) => any;
+
+/** Allow decorators to eval() in the context that called them.
+  * This is needed for various transformations.
+  * @param otherEval must be this function: (code: string) => eval(code) */
+
+export function setEvil(otherEval: (code: string) => any) {
+	evil = otherEval;
+}
+
+/** @dep decorator.
+  * Apply to a function, to list other required variables needing protection
+  * from dead code removal.
+  * Arguments can be functions or names of global variables. */
+
+export function dep(...depList: (((...args: any[]) => any) | string)[]) {
 	return((target: Object, functionName: string) => {
 		// Export names of other functions required by <functionName>
 		// as an array named <functionName>__deps.
@@ -23,7 +38,7 @@ function dep(...depList: any[]) {
 
 				// Export any required global variable,
 				// looking it up by name in current scope.
-				if(name != 'initNamespaces') lib[name] = eval('(' + dep + ')');
+				if(name != 'initNamespaces') lib[name] = evil('(' + dep + ')');
 			}
 
 			// Send name without prefix to __deps list.
@@ -32,46 +47,64 @@ function dep(...depList: any[]) {
 	});
 }
 
-// @exportLibrary decorator.
-// Apply to a class with static methods, to export them as functions.
+/** @exportLibrary decorator.
+  * Apply to a class with static methods, to export them as functions. */
 
-function exportLibrary(target: any) {
+export function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
 var namespaceBodyTbl: { [name: string]: string } = {};
 
-// @exportNamespace decorator.
-// Apply to an empty, named dummy class defined at the end of the namespace,
-// to prepare the entire namespace for exporting and merge its content
-// defined in several source files into a single object.
+/** @prepareNamespace decorator.
+  * Apply to an empty, named dummy class defined at the end of the namespace
+  * block, to prepare its contents for export in an Emscripten library.
+  * Namespaces with matching names in different files are merged together.
+  * All code in the block is separated because Emscripten only outputs global
+  * functions, not methods. */
 
-function exportNamespace(name: string) {
+export function prepareNamespace(name: string) {
+	return((target: any) => {
+		var body = evil('__decorate').caller.caller.toString();
+
+		var prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
+		var suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
+
+		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
+
+		namespaceBodyTbl[name] = body;
+	});
+}
+
+/** Call once per namespace at the global level, after all files with contents
+  * in that namespace have been imported. Clears the namespace and exports a
+  * "postset" function to populate it using its original code. */
+
+export function publishNamespace(name: string) {
 	var exportName = name.substr(1);
 
 	var body = namespaceBodyTbl[name];
 	var bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
 
-	eval(name + '={};');
+	evil(name + '={};');
 
 	var lib: _Library = {
-		_extends: __extends,
-		_decorate: __decorate,
-		defineHidden: _defineHidden
+		_extends: evil('__extends'),
+		_decorate: evil('__decorate'),
+		defineHidden: defineHidden
 	};
 
 	lib[exportName + '__deps'] = Object.keys(lib);
 	lib[exportName + '__postset'] = bodyWrapped;
 
 	mergeInto(LibraryManager.library, lib);
-
-	return((target: any) => {});
 }
 
-// @_defineHidden decorator.
-// Apply to a property to protect it from modifications and hide it.
+/** @_defineHidden decorator.
+  * Assign to a local variable called _defineHidden before using.
+  * Apply to a property to protect it from modifications and hide it. */
 
-function _defineHidden(value?: any) {
+export function defineHidden(value?: any) {
 	return((target: Object, key: string) => {
 		Object.defineProperty(target, key, {
 			configurable: false,
@@ -81,18 +114,3 @@ function _defineHidden(value?: any) {
 		});
 	});
 }
-
-// Typescript internal shim functions.
-
-declare var __decorate: any;
-declare var __extends: any;
-
-// Declarations of some globals provided by Emscripten to its libraries.
-
-interface _Library { [name: string]: any }
-
-declare var LibraryManager: {
-	library: _Library;
-};
-
-declare function mergeInto(target: _Library, extension: _Library): void;
