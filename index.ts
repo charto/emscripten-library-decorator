@@ -4,7 +4,7 @@
 
 var evil: (code: string) => any;
 
-/** Allow decorators to eval() in the context that called them.
+/** Allow decorators to call eval() in the context that called them.
   * This is needed for various transformations.
   * @param otherEval must be this function: (code: string) => eval(code) */
 
