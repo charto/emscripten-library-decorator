@@ -10,7 +10,7 @@
     "docts": "docts",
     "lint": "tslint -c src/tslint.json src/*.ts",
     "prepublish": "npm run lint && tsc -p src",
-    "test": "node index.js"
+    "test": "node dist/index.js"
   },
   "author": "Juha Järvi",
   "license": "MIT",
