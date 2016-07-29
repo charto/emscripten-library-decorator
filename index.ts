@@ -2,7 +2,7 @@
 // copyright (c) 2015-2016 BusFaster Ltd.
 // Released under the MIT license, see LICENSE.
 
-var evil: (code: string) => any;
+let evil: (code: string) => any;
 
 /** Allow decorators to call eval() in the context that called them.
   * This is needed for various transformations.
@@ -21,11 +21,11 @@ export function dep(...depList: (((...args: any[]) => any) | string)[]) {
 	return((target: Object, functionName: string) => {
 		// Export names of other functions required by <functionName>
 		// as an array named <functionName>__deps.
-		var key = functionName + '__deps';
-		var lib = (<{ [key: string]: any }>target);
+		const key = functionName + '__deps';
+		const lib = target as { [key: string]: any };
 
 		lib[key] = (lib[key] || []).concat(depList.map((dep: any) => {
-			var name: string;
+			let name: string;
 
 			if(typeof(dep) == 'function') {
 				// Get name of required function and remove underscore prefix.
@@ -54,8 +54,8 @@ export function exportLibrary(target: any) {
 	mergeInto(LibraryManager.library, target);
 }
 
-var namespaceBodyTbl: { [name: string]: string } = {};
-var namespaceDepTbl: { [name: string]: { [name: string]: any } } = {};
+const namespaceBodyTbl: { [name: string]: string } = {};
+const namespaceDepTbl: { [name: string]: { [name: string]: any } } = {};
 
 /** @prepareNamespace decorator.
   * Apply to an empty, named dummy class defined at the end of the namespace
@@ -66,17 +66,17 @@ var namespaceDepTbl: { [name: string]: { [name: string]: any } } = {};
 
 export function prepareNamespace(name: string, ...depList: string[]) {
 	return((target: any) => {
-		var body = evil('__decorate').caller.caller.toString();
+		let body = evil('__decorate').caller.caller.toString();
 
-		var prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
-		var suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
+		const prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
+		const suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
 
 		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
 
 		namespaceBodyTbl[name] = body;
 		if(!namespaceDepTbl[name]) namespaceDepTbl[name] = {};
 
-		for(var dep of depList) {
+		for(let dep of depList) {
 			namespaceDepTbl[name][dep.substr(1)] = evil('(' + dep + ')');
 		}
 	});
@@ -87,20 +87,20 @@ export function prepareNamespace(name: string, ...depList: string[]) {
   * "postset" function to populate it using its original code. */
 
 export function publishNamespace(name: string) {
-	var exportName = name.substr(1);
+	const exportName = name.substr(1);
 
-	var body = namespaceBodyTbl[name];
-	var bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
+	const body = namespaceBodyTbl[name];
+	const bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
 
 	evil(name + '={};');
 
-	var lib: _Library = {
-		_extends: evil('__extends'),
+	const lib: _Library = {
 		_decorate: evil('__decorate'),
+		_extends: evil('__extends'),
 		defineHidden: defineHidden
 	};
 
-	for(var depName of Object.keys(namespaceDepTbl[name])) {
+	for(let depName of Object.keys(namespaceDepTbl[name])) {
 		lib[depName] = namespaceDepTbl[name][depName];
 	}
 
@@ -119,8 +119,8 @@ export function defineHidden(value?: any) {
 		Object.defineProperty(target, key, {
 			configurable: false,
 			enumerable: false,
-			writable: true,
-			value: value
+			value: value,
+			writable: true
 		});
 	});
 }

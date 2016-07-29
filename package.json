@@ -1,13 +1,14 @@
 {
   "name": "emscripten-library-decorator",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Decorators for writing Emscripten libraries",
   "main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
     "tsc": "tsc",
+    "tslint": "tslint",
     "docts": "docts",
-    "prepublish": "tsc",
+    "prepublish": "tslint index.ts && tsc",
     "test": "node index.js"
   },
   "author": "Juha Järvi",
@@ -22,6 +23,7 @@
   "homepage": "https://github.com/charto/emscripten-library-decorator",
   "devDependencies": {
     "docts": "~0.0.4",
+    "tslint": "^3.14.0",
     "typescript": "^1.8.10"
   }
 }
