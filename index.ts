@@ -55,6 +55,7 @@ export function exportLibrary(target: any) {
 }
 
 var namespaceBodyTbl: { [name: string]: string } = {};
+var namespaceDepTbl: { [name: string]: { [name: string]: any } } = {};
 
 /** @prepareNamespace decorator.
   * Apply to an empty, named dummy class defined at the end of the namespace
@@ -63,7 +64,7 @@ var namespaceBodyTbl: { [name: string]: string } = {};
   * All code in the block is separated because Emscripten only outputs global
   * functions, not methods. */
 
-export function prepareNamespace(name: string) {
+export function prepareNamespace(name: string, ...depList: string[]) {
 	return((target: any) => {
 		var body = evil('__decorate').caller.caller.toString();
 
@@ -73,6 +74,11 @@ export function prepareNamespace(name: string) {
 		body = (namespaceBodyTbl[name] || '') + body.replace(prefix, '').replace(suffix, '');
 
 		namespaceBodyTbl[name] = body;
+		if(!namespaceDepTbl[name]) namespaceDepTbl[name] = {};
+
+		for(var dep of depList) {
+			namespaceDepTbl[name][dep.substr(1)] = evil('(' + dep + ')');
+		}
 	});
 }
 
@@ -93,6 +99,10 @@ export function publishNamespace(name: string) {
 		_decorate: evil('__decorate'),
 		defineHidden: defineHidden
 	};
+
+	for(var depName of Object.keys(namespaceDepTbl[name])) {
+		lib[depName] = namespaceDepTbl[name][depName];
+	}
 
 	lib[exportName + '__deps'] = Object.keys(lib);
 	lib[exportName + '__postset'] = bodyWrapped;
