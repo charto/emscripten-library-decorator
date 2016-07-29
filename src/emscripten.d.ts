@@ -1,6 +1,8 @@
 // Declarations of some globals provided by Emscripten to its libraries.
 
-interface _Library { [name: string]: any }
+interface _Library { // tslint:disable-line:class-name
+	[name: string]: any;
+}
 
 declare var LibraryManager: {
 	library: _Library;
