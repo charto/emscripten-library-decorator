@@ -5,6 +5,7 @@
 		"moduleResolution": "node",
 		"noImplicitAny": true,
 		"noImplicitUseStrict": true,
+		"outDir": "../dist",
 		"removeComments": false,
 		"target": "es5"
 	},

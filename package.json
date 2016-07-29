@@ -2,13 +2,14 @@
   "name": "emscripten-library-decorator",
   "version": "0.1.7",
   "description": "Decorators for writing Emscripten libraries",
-  "main": "index.js",
-  "typings": "index.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc",
     "tslint": "tslint",
     "docts": "docts",
-    "prepublish": "tslint index.ts && tsc",
+    "lint": "tslint -c src/tslint.json src/*.ts",
+    "prepublish": "npm run lint && tsc -p src",
     "test": "node index.js"
   },
   "author": "Juha Järvi",
