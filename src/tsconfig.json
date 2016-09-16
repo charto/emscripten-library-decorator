@@ -11,6 +11,7 @@
 	},
 	"files": [
 		"emscripten.d.ts",
-		"index.ts"
+		"index.ts",
+		"dump-em-lib.ts"
 	]
 }
