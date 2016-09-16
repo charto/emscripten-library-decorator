@@ -1,6 +1,6 @@
 {
   "name": "emscripten-library-decorator",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Decorators for writing Emscripten libraries",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/charto/emscripten-library-decorator",
   "devDependencies": {
-    "docts": "~0.0.4",
-    "tslint": "^3.14.0",
+    "docts": "~0.1.0",
+    "tslint": "^3.15.1",
     "typescript": "^1.8.10"
   }
 }
