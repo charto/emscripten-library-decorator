@@ -66,7 +66,7 @@ const namespaceDepTbl: { [name: string]: { [name: string]: any } } = {};
 
 export function prepareNamespace(name: string, ...depList: string[]) {
 	return((target: any) => {
-		let body = evil('__decorate').caller.caller.toString();
+		let body = evil('__decorate').caller.toString();
 
 		const prefix = new RegExp('^[ (]*function *\\( *' + name + ' *\\) *\\{');
 		const suffix = new RegExp('var +' + target.name + ' *= *[^]*$');
