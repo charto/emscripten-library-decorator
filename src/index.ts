@@ -1,5 +1,5 @@
 // This file is part of emscripten-library-decorator,
-// copyright (c) 2015-2016 BusFaster Ltd.
+// copyright (c) 2015-2017 BusFaster Ltd.
 // Released under the MIT license, see LICENSE.
 
 let evil: (code: string) => any;

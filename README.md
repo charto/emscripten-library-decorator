@@ -91,4 +91,4 @@ License
 -------
 [The MIT License](https://raw.githubusercontent.com/charto/emscripten-library-decorator/master/LICENSE)
 
-Copyright (c) 2015-2016 BusFaster Ltd
+Copyright (c) 2015-2017 BusFaster Ltd
