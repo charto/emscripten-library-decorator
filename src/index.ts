@@ -12,6 +12,24 @@ export function setEvil(otherEval: (code: string) => any) {
 	evil = otherEval;
 }
 
+export interface ClassType {
+	new(...args: any[]): ClassType;
+
+	[ key: string ]: any;
+}
+
+export function __extends(Class: ClassType, Parent: ClassType) {
+
+	// tslint:disable-next-line:no-invalid-this
+	function Base() { this.constructor = Class; }
+
+	Base.prototype = Parent.prototype;
+
+	for(let key in Parent) if(Parent.hasOwnProperty(key)) Class[key] = Parent[key];
+
+	return(new (Base as any)());
+}
+
 /** @dep decorator.
   * Apply to a function, to list other required variables needing protection
   * from dead code removal.
@@ -93,10 +111,10 @@ export function publishNamespace(name: string) {
 	const bodyWrapped = '(function(' + name + '){' + body + '})' + '(' + name + ')';
 
 	evil(name + '={};');
+	evil('__extends=' + __extends.toString() + ';');
 
 	const lib: _Library = {
 		_decorate: evil('__decorate'),
-		_extends: evil('__extends'),
 		defineHidden: defineHidden
 	};
 

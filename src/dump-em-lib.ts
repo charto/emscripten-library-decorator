@@ -41,7 +41,7 @@ function dump(path: string) {
 
 			output.push(item);
 		}
-	};
+	}
 
 	return(output.join('\n'));
 }
