@@ -19,15 +19,13 @@ export interface ClassType {
 }
 
 export function __extends(Class: ClassType, Parent: ClassType) {
+	for(let key in Parent) if(Parent.hasOwnProperty(key)) Class[key] = Parent[key];
 
 	// tslint:disable-next-line:no-invalid-this
 	function Base() { this.constructor = Class; }
 
 	Base.prototype = Parent.prototype;
-
-	for(let key in Parent) if(Parent.hasOwnProperty(key)) Class[key] = Parent[key];
-
-	return(new (Base as any)());
+	Class.prototype = new (Base as any)();
 }
 
 /** @dep decorator.
